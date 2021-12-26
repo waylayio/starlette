@@ -169,10 +169,15 @@ class HTTPConnection(Mapping):
             self._state = State(self.scope["state"])
         return self._state
 
-    def url_for(self, name: str, **path_params: typing.Any) -> str:
+    def url_for(
+        self, name: str, query_params: dict = None, **path_params: typing.Any
+    ) -> str:
         router: Router = self.scope["router"]
         url_path = router.url_path_for(name, **path_params)
-        return url_path.make_absolute_url(base_url=self.base_url)
+        absolute_url = URL(url_path.make_absolute_url(base_url=self.base_url))
+        if query_params:
+            absolute_url = absolute_url.include_query_params(**query_params)
+        return absolute_url._url
 
 
 async def empty_receive() -> Message:

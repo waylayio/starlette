@@ -224,6 +224,7 @@ async def test_upload_file():
     await big_file.write(b"big-data")
     await big_file.seek(0)
     assert await big_file.read(1024) == b"big-data" * 128
+    assert big_file.size == 4104
     await big_file.close()
 
 
@@ -232,9 +233,11 @@ async def test_upload_file_file_input():
     """Test passing file/stream into the UploadFile constructor"""
     stream = io.BytesIO(b"data")
     file = UploadFile(filename="file", file=stream)
+    assert file.size == 4
     assert await file.read() == b"data"
     await file.write(b" and more data!")
     assert await file.read() == b""
+    assert file.size == 19
     await file.seek(0)
     assert await file.read() == b"data and more data!"
 

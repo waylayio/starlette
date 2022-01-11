@@ -416,7 +416,10 @@ class UploadFile:
 
     spool_max_size = 1024 * 1024
     file: typing.BinaryIO
+    filename: str
+    content_type: str
     headers: "Headers"
+    size: int
 
     def __init__(
         self,
@@ -430,9 +433,17 @@ class UploadFile:
         self.content_type = content_type
         if file is None:
             self.file = tempfile.SpooledTemporaryFile(max_size=self.spool_max_size)  # type: ignore  # noqa: E501
+            self.size = 0
         else:
             self.file = file
+            self.size = self._get_file_size(file)
         self.headers = headers or Headers()
+
+    def _get_file_size(self, file: typing.BinaryIO):
+        self.file.seek(0, 2)  # Seek end of file
+        size = self.file.tell()
+        self.file.seek(0, 0)
+        return size
 
     @property
     def _in_memory(self) -> bool:
@@ -440,6 +451,8 @@ class UploadFile:
         return not rolled_to_disk
 
     async def write(self, data: bytes) -> None:
+        self.size += len(data)
+
         if self._in_memory:
             self.file.write(data)  # type: ignore
         else:

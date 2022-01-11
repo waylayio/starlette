@@ -439,7 +439,7 @@ class UploadFile:
             self.size = self._get_file_size(file)
         self.headers = headers or Headers()
 
-    def _get_file_size(self, file: typing.BinaryIO):
+    def _get_file_size(self, file: typing.BinaryIO) -> int:
         self.file.seek(0, 2)  # Seek end of file
         size = self.file.tell()
         self.file.seek(0, 0)
